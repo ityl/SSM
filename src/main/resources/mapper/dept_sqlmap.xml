@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssm.boot.dto.dept.Dept">
+
+    <resultMap id="resultBaseMap" type="com.ssm.boot.dto.dept.Dept">
+        <id property="id" column="id" />
+        <result property="dept_name" column="dept_name" />
+    </resultMap>
+
+
+    <select id="selectA" resultMap="resultBaseMap" >
+        SELECT *
+        FROM  dept
+    </select>
+
+    <select id="selectById" resultMap="resultBaseMap" parameterType="string" >
+        SELECT id,dept_name
+        FROM  dept WHERE id=#{id}
+    </select>
+
+
+    <insert id="insert" parameterType="java.util.Map">
+        insert into dept (dept_name) VALUES (#{dept_name})
+    </insert>
+
+    <delete id="del" parameterType="java.lang.String">
+       DELETE  from dept WHERE id =#{id}
+    </delete>
+
+
+
+<!--    <select id="selectList"  resultMap="resultBaseMap" parameterType="java.util.Map">
+        select
+        id,name,subtitle,img_url,type,url,status,rank,start_time,url_type
+        from
+        banner
+        where
+        1 = 1
+        &lt;!&ndash; 1：商城banner; 2：健康管理页banner；3：私人医生频道banner； &ndash;&gt;
+        <if test="type != null">
+            and type = #{type}
+        </if>
+        &lt;!&ndash; url类型    1:网页 2：客户端 &ndash;&gt;
+        <if test="urlType != null">
+            and url_type = #{urlType}
+        </if>
+        &lt;!&ndash; 1：上线 0：未上线 &ndash;&gt;
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        order by
+        rank asc
+        <if test="page != null and size != null">
+            limit #{page},#{size}
+        </if>
+    </select>-->
+</mapper>
