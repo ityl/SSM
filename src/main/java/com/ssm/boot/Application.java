@@ -17,8 +17,7 @@ import java.util.Properties;
 
 @SpringBootApplication
 public class Application {
-	public Application() {
-	}
+
 
 	@Bean
 	@ConfigurationProperties(
@@ -27,6 +26,8 @@ public class Application {
 	public DataSource dataSource() {
 		return new DataSource();
 	}
+
+
 
 	@Bean
 	public SqlSessionTemplate sqlWriteSessionTemplate() throws Exception {

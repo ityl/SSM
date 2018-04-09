@@ -39,7 +39,7 @@ mybatis:
     map-underscore-to-camel-case: true    # 驼峰命名转换
 
 server:
-  port: 8089
+  port: 18080
   undertow:
     worker-threads: 20
     buffer-size: 512

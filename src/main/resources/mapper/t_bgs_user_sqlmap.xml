@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssm.boot.dto.bgs.UserDto">
+
+    <resultMap id="resultBaseMap" type="com.ssm.boot.dto.bgs.UserDto">
+        <id property="id" column="id" javaType="java.lang.Integer"/>
+        <result property="user_name" column="user_name"/>
+        <result property="nick_name" column="nick_name"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="create_user" column="create_user"/>
+        <result property="create_time" column="create_time"/>
+        <result property="last_login_time" column="last_login_time"/>
+        <result property="last_login_ip" column="last_login_ip"/>
+        <result property="update_time" column="update_time"/>
+        <collection property="roles" ofType="com.ssm.boot.dto.bgs.RoleDto" javaType="list">
+            <result column="role" property="role"/>
+            <result column="descpt" property="descpt"/>
+        </collection>
+    </resultMap>
+
+   <!-- 登录-->
+    <select id="login" parameterType="com.ssm.boot.dto.bgs.UserDto" resultMap="resultBaseMap">
+        SELECT id FROM t_bgs_user WHERE user_name = #{user_name} and password = #{password}
+    </select>
+
+
+    <!--查询权限名称-->
+    <select id="selectUserByAccount" parameterType="java.lang.String" resultMap="resultBaseMap">
+        select u.id,u.nick_name,u.user_name,u.email,u.create_user,u.last_login_ip,r.role,r.id,r.descpt
+        from t_bgs_user u,t_bgs_role r,t_bgs_user_role tr
+        WHERE
+        u.id=tr.u_id and r.id =tr.r_id and u.user_name =#{user_name}
+    </select>
+
+    <!--编辑-->
+    <update id="updateById" parameterType="java.util.Map">
+        UPDATE t_bgs_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="user_name != null">
+                user_name =#{user_name},
+            </if>
+            <if test="nick_name != null ">
+                nick_name =#{nick_name},
+            </if>
+            <if test="password != null ">
+                password =#{password},
+            </if>
+            <if test="email != null ">
+                email =#{email},
+            </if>
+            update_time =CURRENT_TIMESTAMP ,
+            last_login_time =CURRENT_TIMESTAMP ,
+            <if test="last_login_ip != null ">
+                last_login_ip =#{last_login_ip},
+            </if>
+        </trim>
+        WHERE id =#{id}
+    </update>
+
+    <!-- admin删除 -->
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM t_bgs_user WHERE id=#{id}
+    </delete>
+
+    <!-- admin 增加-->
+    <insert id="insert" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
+        insert into t_bgs_user (id,user_name,nick_name,email,password,create_user,create_time,last_login_time,last_login_ip,update_time)
+        VALUES (#{id},#{user_name},#{nick_name},#{email},#{password},#{create_user},CURRENT_TIMESTAMP ,CURRENT_TIMESTAMP,
+        #{last_login_ip},CURRENT_TIMESTAMP)
+        <selectKey resultType="Integer" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() AS id
+        </selectKey>
+    </insert>
+
+    <!--列表展示admin管理员-->
+    <select id="selectList" resultMap="resultBaseMap" parameterType="java.util.Map">
+        select id,user_name,nick_name,email
+        from t_bgs_user  order by create_time desc
+        limit #{page},#{size}
+    </select>
+
+    <!-- 获取总数-->
+    <select id="selectCount" resultType="java.lang.String">
+        select count(id) as total
+        from t_bgs_user
+    </select>
+
+
+
+</mapper>

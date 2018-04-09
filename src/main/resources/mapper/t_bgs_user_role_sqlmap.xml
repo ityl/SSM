@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssm.boot.dto.bgs.UserRoleDto">
+
+    <resultMap id="resultBaseMap" type="com.ssm.boot.dto.bgs.UserRoleDto">
+        <id property="id" column="id" javaType="java.lang.Integer"/>
+        <result property="u_id" column="u_id"/>
+        <result property="r_id" column="r_id"/>
+    </resultMap>
+
+
+
+    <!--查询权限r_id-->
+    <select id="getNavByAdmin" parameterType="java.lang.Integer" resultMap="resultBaseMap">
+        select tr.r_id
+        from t_bgs_user_role tr
+        WHERE
+       tr.u_id =#{u_id}
+    </select>
+
+    <!--删除角色权限-->
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM t_bgs_user_role WHERE u_id=#{u_id}
+    </delete>
+
+    <!--添加角色权限-->
+    <insert id="insert" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
+        insert into t_bgs_user_role (u_id,r_id)
+        VALUES (#{u_id},#{r_id})
+    </insert>
+
+
+
+</mapper>

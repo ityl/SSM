@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssm.boot.dto.bgs.RoleDto">
+
+    <resultMap id="resultBaseMap" type="com.ssm.boot.dto.bgs.RoleDto">
+        <id property="id" column="id" javaType="java.lang.Integer"/>
+        <result property="role" column="role"/>
+        <result property="descpt" column="descpt"/>
+    </resultMap>
+
+
+
+    <!--查询权限-->
+    <select id="selectRolesById" parameterType="java.lang.Integer" resultType="com.ssm.boot.dto.bgs.RoleDto">
+        select r.role,r.id,r.descpt from t_bgs_role r,t_bgs_user_role tr
+        where  r.id =tr.r_id and  tr.u_id = #{u_id}
+    </select>
+
+    <!--所有角色权限-->
+    <select id="selectRoles" resultMap="resultBaseMap">
+        SELECT id,descpt FROM t_bgs_role
+    </select>
+
+</mapper>
