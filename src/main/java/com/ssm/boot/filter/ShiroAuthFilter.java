@@ -18,7 +18,7 @@ import java.util.Set;
 
 
 /**
- * Created by hongpengsun on 17/7/28.
+ * Created by yanglei on 17/7/28.
  *
  * 过滤器说明：必须为登录状态
  *           shiroExceptionFilter[1，2] 1,2拥有其中一种即可访问

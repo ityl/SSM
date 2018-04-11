@@ -37,13 +37,13 @@ public class AuthRealm extends AuthorizingRealm {
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principal) {
         String loginName= SecurityUtils.getSubject().getPrincipal().toString();
         SimpleAuthorizationInfo authorizationInfo=new SimpleAuthorizationInfo();
-
         List<RoleDto> listRoles=userService.selectUserByAccount(loginName).getRoles();
         Set<String> role=new HashSet<String>();
         for (RoleDto roleDto:listRoles){
             System.out.println(roleDto.getRole());
             role.add(roleDto.getRole());
         }
+
         authorizationInfo.setRoles(role);
         return authorizationInfo;
     }
