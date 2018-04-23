@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>WebUploaderTitle</title>
+
+    <!--1、导入支持-->
+    <link rel="stylesheet" type="text/css" href="css/webuploader.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/webuploader.js"></script>
+
+    <style type="text/css">
+        #dndArea {
+            width: 200px;
+            height: 100px;
+            border-color: red;
+            border-style: dashed;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<!--2、设计元素-->
+<div id="uploader">
+    <!--用于拖拽文件-->
+    <div id="dndArea"></div>
+    <!--用于显示文件列表-->
+    <div id="filelist"></div>
+    <!--用于选择文件-->
+    <div id="filePick">点击选择文件</div>
+</div>
+
+
+<!--3、webuploader渲染设计元素-->
+<script type="text/javascript">
+
+    //获取文件标记
+    var fileMd5;
+    var filename;
+    WebUploader.Uploader.register({
+        //监听分块上传的三个时间点方法,实现分块上传
+        //1.before-send-file:该方法在文件上传前调用
+        //可以在该方法中获取文件的MD5字符串作为后台的保存文件的目录名
+        //2.before-send:该方法在每个分块文件上传前调用
+        //可以再该方法中发送md5字符串到后台,并发送分块文件到后台保存
+        //3.after-send-file:该方法在所有文件上传完成没有错误之后调用.
+        //可以再该方法中通知后台合并所有分块文件
+
+        "before-send-file": "beforeSendFile",
+        "before-send": "beforeSend",
+        "after-send-file": "afterSendFile"
+    }, {
+
+        //时间点1:所有分块进行上传之前调用此函数
+        beforeSendFile: function (file) {
+
+            var deferred = WebUploader.Deferred();
+
+            //1.计算文件的唯一标记,用于断点续传和秒传
+            (new WebUploader.Uploader()).md5File(file, 0, 5 * 1024 * 1024).progress(function (per) {
+                $("#" + file.id).find("div.state").text("正在获取文件信息...");
+            }).then(function (val) {
+                fileMd5 = val;
+
+                $("#" + file.id).find("div.state").text("成功获取文件信息");
+                //只有获取文件信息成功,才能执行下一步
+
+                deferred.resolve();
+            })
+
+            //2.请求后台是否保存过该文件,如果存在,则跳过该文件,实现秒传功能
+            return deferred.promise();
+        },
+        //时间点2:如果有分块上传,则每个分块上传之前调用此函数
+        beforeSend: function (block) {
+            var deferred = WebUploader.Deferred();
+
+            $.ajax({
+                type: "POST",
+                url: "k/check",
+                data: {
+                    fileMd5: fileMd5,
+                    chunk:block.chunk,
+                    chunkSize:block.end-block.start
+                },
+                dateType:"json",
+                success: function (result) {
+                   if (result.status){
+                       //文件块存在跳过该分块
+                        deferred.reject();
+                   }else {
+                       //分块不全
+                        deferred.resolve();
+                   }
+                }
+            });
+
+
+            this.owner.options.formData.fileMd5 = fileMd5;
+
+           // deferred.resolve();
+
+            return deferred.promise();
+            //1.请求后台是否保存过当前分块,如果存在,则跳过该分块文件,实现断点续传
+
+        },
+        //时间点3:所有分块上传成功之后调用此函数
+        afterSendFile: function () {
+            alert(filename);
+            //1.如果分块上传,则通过后台合并所有分块文件
+            $.ajax({
+                type: "POST",
+                url: "k/chunk",
+                data: {
+                    fileMd5: fileMd5,
+                    fileName:filename
+                },
+                success: function (result) {
+                    alert("1")
+                }
+            });
+
+        }
+
+    });
+    var uploader = WebUploader.create({
+        //flash控件地址
+        swf: "/js/Uploader.swf",
+        //后台提交地址
+        server: "/k/upload",
+        //选择文件标签
+        pick: "#filePick",
+        //自动上传
+        auto: true,
+        //开启拖拽功能,指定拖拽区域
+        dnd: "#dndArea",
+        //禁用页面其他地方的拖拽功能
+        disableGlobalDnd: true,
+        //开启黏贴功能
+        paste: "#uploader",
+        //分块上传设置
+        //是否分块上传
+        chunked: true,
+        //每块默认大小(5M)
+        chunkSize: 5 * 1024 * 1024,
+        //开启几个并发线程并发3个
+        threads: 3,
+        //当上传当前文件时,准备好下一个文件
+        prepareNextFile: true
+    });
+    /*4 实现选择文件,并且提示文件的功能*/
+    uploader.on("fileQueued", function (file) {
+        //把文件信息追加到filelist的div
+        $("#filelist").append("<div id=" + file.id + "><img/><span class='fName'>" + file.name + "</span><div><span class='percent'></span></div><span class='state'></span></div>");
+        //制作缩略图
+        uploader.makeThumb(file, function (error, src) {
+            //判断是否是缩略图
+            if (error) {
+                $("#" + file.id).find("img").replaceWith("无法预览");
+            }
+            $("#" + file.id).find("img").attr("src", src);
+            filename =  $("#" + file.id).find("span.fName").text();
+        });
+    });
+
+
+    /*5 上传过程中实现文件监控*/
+    uploader.on("uploadProgress", function (file, percent) {
+//把文件信息追加到filelist的div
+        $("#" + file.id).find("span.percent").text(Math.round(percent * 100) + "%");
+    });
+
+
+</script>
+
+
+</body>
+</html>
